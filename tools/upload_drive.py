@@ -16,9 +16,9 @@ def cfg():
                 url = v
             if k == "DRIVE_UPLOAD_KEY" and not key:
                 key = v
-    if not url or not key:
-        sys.exit("ไม่มี DRIVE_UPLOAD_URL / DRIVE_UPLOAD_KEY")
-    return url, key
+    if not url:
+        sys.exit("ไม่มี DRIVE_UPLOAD_URL")
+    return url, key or ""
 
 
 def post(url, payload, tries=4):
