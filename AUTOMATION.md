@@ -2,7 +2,11 @@
 
 This runbook is for an unattended daily run. Nobody is watching, so don't ask questions. Make sensible choices, finish the work, and report at the end in Thai.
 
-Project root: `E:\คลิปลงปักตระกร้า`. Read `วิธีใช้.md`, `tools/registry.json`, and at least two existing episodes before you start. Use their `clips/*/script.json` and `clips/*/scenes.js`, for example `clips/ep04-wrist-mousepad` and `clips/ep06-lumbar-cushion`, to learn the drawing API in `tools/core.html` and how the scripts are built.
+Project root: the repository root (`E:\คลิปลงปักตระกร้า` on the user's PC; the git checkout in the cloud).
+
+**Cloud setup (Linux):** before anything else, run `bash tools/setup_cloud.sh`. It installs the Python packages, the npm packages and Chrome. In the cloud use `python3`.
+
+**Saving state:** when the day is finished, commit `tools/registry.json`, the new `clips/*/script.json` and `clips/*/scenes.js`, and `tools/voice.py` if you changed it, then push to the default branch (`main`). That way the next day knows which formats and products were already used. Never commit mp4/wav files. `.gitignore` handles this. Read `วิธีใช้.md`, `tools/registry.json`, and at least two existing episodes before you start. Use their `clips/*/script.json` and `clips/*/scenes.js`, for example `clips/ep04-wrist-mousepad` and `clips/ep06-lumbar-cushion`, to learn the drawing API in `tools/core.html` and how the scripts are built.
 
 ## Hard rules (from the user)
 1. **Every episode is fully unique.** Each one gets a new story format, new characters, new scenes, palette, header, subtitle style, intro, outro and end card.
@@ -45,7 +49,13 @@ Project root: `E:\คลิปลงปักตระกร้า`. Read `ว�
    - the file name,
    - a 1–2 line Thai caption with a hook and the product,
    - 5–8 hashtags, such as #โต๊ะคอม #ของมันต้องมี #shopee #ป้ายยา.
-5. Upload to Google Drive with the Google Drive connector (`create_file`):
+5. Upload to Google Drive. **Preferred:** run `python3 tools/upload_drive.py พร้อมโพสต์/D D` (use `python` on Windows).
+   - It posts each file to the user's Apps Script web app.
+   - It needs the env vars `DRIVE_UPLOAD_URL` and `DRIVE_UPLOAD_KEY`.
+   - The network must allow `script.google.com` and `script.googleusercontent.com`.
+   - It prints the Drive folder link; put that link in the report.
+
+   **Fallback**, only if those env vars are missing, use the Google Drive connector (`create_file`):
    - Find or create a folder titled `D` inside parent `registry.drive_parent_folder_id`. Use `search_files` with `parentId = '<id>' and title = 'D'`. If it doesn't exist, create it with `contentMimeType: application/vnd.google-apps.folder`.
    - Run `python tools/upload_refs.py พร้อมโพสต์/D` to get the file references.
    - Upload each mp4 with `base64Content` set to that reference, `contentMimeType: video/mp4`, `disableConversionToGoogleType: true` and `parentId` set to the day folder.
