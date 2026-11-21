@@ -14,10 +14,11 @@ Project root: the repository root (`E:\คลิปลงปักตระก�
    - Within one day, all 10 episodes must differ from each other in music style and subtitle font.
 2. **Products:** cheap computer-desk items, mostly under ฿500. Never repeat anything in `registry.products_used`. Pick from `registry.product_ideas` or add similar cheap desk items.
 3. **Language:** all narration, subtitles and on-screen text are in Thai.
-4. **Format:** vertical 1080x1920, about 20–30 s.
+4. **Format:** vertical 1080x1920, about **35–50 s**. The user found 20–30 s clips too thin.
 5. **Structure:**
    - A hook in the first 2 s.
-   - One real, modest educational fact. Use hedged wording such as "บางงานวิจัย…" or "ช่วยให้…". Make no medical cure claims, and add a small source line when citing a study.
+   - **Three knowledge beats:** (a) one real, modest fact, (b) WHY it happens (the mechanism), (c) a practical how-to tip plus a bonus habit tip. The clip should feel genuinely informative, not just an ad.
+   - The fact uses Use hedged wording such as "บางงานวิจัย…" or "ช่วยให้…". Make no medical cure claims, and add a small source line when citing a study.
    - A product reveal with 2–3 benefit chips.
    - A clear CTA to the basket: "ตะกร้าด้านล่าง".
 6. **End card:** show the product name plus "อยู่ในตะกร้าด้านล่าง". **Never tease a next episode.**
@@ -30,7 +31,7 @@ Project root: the repository root (`E:\คลิปลงปักตระก�
 2. Plan 10 episodes: format, product, fact, cast and music style. Numbers continue from `registry.next_ep`. Folder name: `clips/epNN-<english-slug>`.
 3. For each episode, do the following. A subagent per episode helps keep context small; run at most 2 at a time because rendering is CPU-heavy.
    a. Write `script.json`. Follow the schema of the existing files: `title`, `series`, `product`, `intro`, `gap`, `outro`, `cast`, `music`, `lines[who, scene, text, hl]` and `sfx`.
-      - Use 7–9 short lines.
+      - Use 10–12 lines.
       - Voices: `th-TH-NiwatNeural` (male) and `th-TH-PremwadeeNeural` (female). Vary them with rate, pitch and fx.
       - Music styles: scifi, noir, doc, news, quiz, chip, funk, horror, workout, drama. You may add a new style function to `tools/voice.py`, but don't change the existing ones.
       - Sfx kinds are listed in `voice.py` `sfx()`.

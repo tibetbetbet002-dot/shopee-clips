@@ -8,7 +8,7 @@ const FPS = 30;
 // หาเบราว์เซอร์: Windows (Edge/Chrome) หรือ Linux บนคลาวด์ (Chrome ที่ setup_cloud.sh ติดตั้ง)
 function findBrowser() {
   const c = [process.env.CHROME_PATH,
-    'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', 'C:/Program Files/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
     '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/usr/bin/chromium-browser'].filter(Boolean);
   const hit = c.find(p => fs.existsSync(p));
   if (hit) return hit;

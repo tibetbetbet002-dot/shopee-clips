@@ -459,6 +459,7 @@ def main(folder):
 
     m = sc.get("music", {"style": "scifi"})
     music = MUSIC[m["style"]](len(voice) / SR, **({"bpm": m["bpm"]} if "bpm" in m else {}))
+    music = np.resize(music, len(voice)) if len(music) >= len(voice) else np.pad(music, (0, len(voice) - len(music)))
     fade = int(1.2 * SR); music[-fade:] *= np.linspace(1, 0, fade)
     # เพลงเบากว่าเสียงพูด MUSIC_DB dB และหลบลงอีก DUCK_DB dB ตอนมีคนพูด
     mrms = float(np.sqrt(np.mean(music ** 2))) or 1e-4
