@@ -1,0 +1,9 @@
+tools/node_modules/
+tools/.chrome/
+clips/*/stills/
+clips/*/voice/
+clips/*/*.mp4
+clips/*/audio.wav
+clips/*/contact*.jpg
+พร้อมโพสต์/
+__pycache__/

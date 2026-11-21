@@ -1,0 +1,39 @@
+{
+ "title": "คดีตาล้า",
+ "series": "แฟ้มคดีโต๊ะคอม #02",
+ "product": "ไฟแขวนจอ (Monitor light bar)",
+ "intro": 1.6,
+ "gap": 0.32,
+ "outro": 2.0,
+ "cast": {
+  "cat":  {"voice": "th-TH-NiwatNeural", "rate": "-8%", "pitch": "-20Hz", "fx": "aecho=0.8:0.3:60|120:0.18|0.08,lowpass=f=7000", "gain": 1.1},
+  "fon":  {"voice": "th-TH-PremwadeeNeural", "rate": "+0%", "pitch": "+0Hz",
+           "fallback": {"voice": "th-TH-NiwatNeural", "rate": "+8%", "pitch": "+28Hz"}}
+ },
+ "music": {"style": "noir", "level": 0.34},
+ "lines": [
+  {"who": "cat", "scene": "city",     "text": "ตีสอง คืนฝนตก... ผมได้รับแจ้งคดีใหม่ คดีตาล้า", "hl": ["คดีตาล้า"]},
+  {"who": "fon", "scene": "victim",   "text": "ตาแสบ ตาล้า แล้วก็ปวดหัวทุกคืนเลยค่ะ", "hl": ["ปวดหัว"]},
+  {"who": "cat", "scene": "lineup",   "text": "คนร้ายคือ... จอสว่างจ้า ในห้องที่มืดสนิท", "hl": ["จอสว่างจ้า", "มืดสนิท"]},
+  {"who": "cat", "scene": "iris",     "text": "ตาต้องปรับแสงไปมาระหว่างจอกับโต๊ะทั้งคืน เลยล้าไม่หยุด", "hl": ["ปรับแสงไปมา"]},
+  {"who": "cat", "scene": "evidence", "text": "หลักฐานชิ้นสำคัญ ไฟแขวนจอ ส่องลงโต๊ะ ไม่แยงจอ", "hl": ["ไฟแขวนจอ"]},
+  {"who": "fon", "scene": "lit",      "text": "โต๊ะสว่าง ไม่กินที่ ราคาสบายกระเป๋า", "hl": ["สบายกระเป๋า"]},
+  {"who": "cat", "scene": "tip",      "text": "ทิปแถม ทุก 20 นาที มองไกล 20 ฟุต 20 วินาที", "hl": ["20 นาที", "20 ฟุต", "20 วินาที"]},
+  {"who": "cat", "scene": "closed",   "text": "ปิดคดี! หลักฐานอยู่ในตะกร้าด้านล่าง", "hl": ["ตะกร้า"]},
+  {"who": "cat", "scene": "gag",      "text": "ส่วนผมไม่ต้องใช้ เพราะผมเป็นแมว", "hl": ["แมว"]}
+ ],
+ "sfx": [
+  {"k": "rain", "line": 0, "at": -1.6, "dur": 15, "g": 0.55},
+  {"k": "thunder", "line": 0, "at": -1.4, "g": 0.9},
+  {"k": "type", "line": 0, "at": -0.8, "dur": 0.7, "g": 0.6},
+  {"k": "sting", "line": 2, "at": 0.9},
+  {"k": "shutter", "line": 2, "at": 0.95, "g": 0.8},
+  {"k": "whoosh", "line": 3, "at": -0.15},
+  {"k": "click", "line": 4, "at": 1.05, "g": 1.2},
+  {"k": "shimmer", "line": 4, "at": 1.1},
+  {"k": "pop", "line": 5, "at": 0.05}, {"k": "pop", "line": 5, "atDur": 0.33}, {"k": "pop", "line": 5, "atDur": 0.62},
+  {"k": "ding", "line": 6, "at": 0.4, "g": 0.6},
+  {"k": "stamp", "line": 7, "at": 0.1},
+  {"k": "squeak", "line": 8, "atDur": 0.85, "g": 0.6}
+ ]
+}
