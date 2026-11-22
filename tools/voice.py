@@ -408,6 +408,17 @@ def sfx(kind, dur=None):
         tt = t(0.4); return lowpass(rng.standard_normal(len(tt)), 3) * np.sin(np.pi * tt / 0.4) * 0.15
     if kind == "slap":
         return noise(0.1, 40) * 0.6
+    if kind == "alarm":
+        out = np.zeros(int(1.6 * SR), np.float32)
+        for k in range(6):
+            add(out, tone(note(88), 0.1, "square", 4) * 0.12, k * 0.25)
+        return out
+    if kind == "birds":
+        d = dur or 3.0; out = np.zeros(int(d * SR), np.float32)
+        for k in range(int(d * 3)):
+            tt = t(0.12); f = 3000 + 1500 * np.sin(np.pi * tt / 0.12) + rng.random() * 800
+            add(out, np.sin(2 * np.pi * np.cumsum(f) / SR) * np.sin(np.pi * tt / 0.12) * 0.06, rng.random() * (d - 0.2))
+        return out
     raise ValueError(kind)
 
 

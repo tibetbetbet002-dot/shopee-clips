@@ -108,9 +108,18 @@ window.draw=(t)=>{T=t;ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.clearR
   const last=L[L.length-1],endT=last.start+last.dur+0.25;
   const gap=EP.outroGap??0.55;
   if(EP.endCard&&t>endT+gap){EP.endCard(prog(t,endT+gap,endT+gap+0.5),t-endT-gap);return;}
-  ctx.save();(EP.camera||defaultCamera)(ln.scene,lt,ln);
-  if(t<L[0].start&&EP.intro)EP.intro(t);else EP.scenes[ln.scene](lt,ln,i);
+  // sceneTime: ฉากเดียวกันต่อเนื่องหลายประโยค → เวลานับจากต้นฉาก, xfade: ค่อยๆ เปลี่ยนฉาก
+  const span=(k)=>{let a=k;while(a>0&&L[a-1].scene===L[k].scene)a--;let b=k;while(b<L.length-1&&L[b+1].scene===L[k].scene)b++;
+    return {s:L[a].start,d:(b+1<L.length?L[b+1].start:L[b].start+L[b].dur)-L[a].start,first:a};};
+  const sc=EP.sceneTime?span(i):null;
+  const slt=sc?t-sc.s:lt, sln=sc?Object.assign({},ln,{dur:sc.d}):ln;
+  ctx.save();(EP.camera||defaultCamera)(ln.scene,slt,sln);
+  if(t<L[0].start&&EP.intro)EP.intro(t);else EP.scenes[ln.scene](slt,sln,i);
   ctx.restore();
+  const xf=EP.xfade||0;
+  if(xf&&sc&&sc.first>0&&t-sc.s<xf&&t>=L[0].start){const pi=sc.first-1,ps=span(pi),pl=L[pi];
+    ctx.save();ctx.globalAlpha=1-E.inOut((t-sc.s)/xf);(EP.camera||defaultCamera)(pl.scene,t-ps.s,Object.assign({},pl,{dur:ps.d}));
+    EP.scenes[pl.scene](t-ps.s,Object.assign({},pl,{dur:ps.d}),pi);ctx.restore();ctx.globalAlpha=1;}
   if(EP.overlay)EP.overlay(t,ln,lt);
   const nextStart=i+1<L.length?L[i+1].start-0.12:endT;
   if(t>=ln.start-0.05&&t<Math.max(ln.start+1.8,ln.start+ln.dur+0.2)&&t<nextStart)subtitle(ln,t-ln.start+0.05);

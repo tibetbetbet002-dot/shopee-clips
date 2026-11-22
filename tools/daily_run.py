@@ -30,7 +30,7 @@ def main():
     if day in reg["days"] and not a.only:
         print("วันนี้ทำไปแล้ว:", day); return
     queue = sorted(d for d in os.listdir(os.path.join(ROOT, "clips"))
-                   if os.path.exists(os.path.join(ROOT, "clips", d, "scenes.js")) and d not in used)
+                   if os.path.exists(os.path.join(ROOT, "clips", d, "scenes.js")) and d not in used and not d.startswith("draft-"))
     if a.only:
         queue = a.only.split(",")
     todo = queue[:count]
