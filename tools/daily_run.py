@@ -31,6 +31,8 @@ def main():
         print("วันนี้ทำไปแล้ว:", day); return
     queue = sorted(d for d in os.listdir(os.path.join(ROOT, "clips"))
                    if os.path.exists(os.path.join(ROOT, "clips", d, "scenes.js")) and d not in used and not d.startswith("draft-"))
+    # เรื่องยาว (st...) มาก่อนเสมอ ถ้าหมดค่อยใช้คลิปสั้นแบบเก่าที่ค้างคิว ระบบจะได้ไม่หยุด
+    queue = [q for q in queue if q.startswith("st")] + [q for q in queue if not q.startswith("st")]
     if a.only:
         queue = a.only.split(",")
     todo = queue[:count]

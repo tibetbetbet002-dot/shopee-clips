@@ -36,35 +36,59 @@ def trim(x, th=0.012):
     return x[max(idx[0] - 600, 0): min(idx[-1] + 2400, len(x))]
 
 
+def lead_of(x, th=0.012):
+    idx = np.where(np.abs(x) > th)[0]
+    return max(idx[0] - 600, 0) if len(idx) else 0
+
+
+async def _tts_stream(text, voice, rate, pitch, out):
+    c = edge_tts.Communicate(text, voice, rate=rate, pitch=pitch, boundary="WordBoundary")
+    words = []
+    with open(out, "wb") as f:
+        async for ch in c.stream():
+            if ch["type"] == "audio":
+                f.write(ch["data"])
+            elif ch["type"] == "WordBoundary":
+                words.append([ch["offset"] / 1e7, (ch["offset"] + ch["duration"]) / 1e7, ch["text"]])
+    return words
+
+
 def tts_try(text, voice, rate, pitch, out, tries):
     for _ in range(tries):
         try:
-            asyncio.run(edge_tts.Communicate(text, voice, rate=rate, pitch=pitch).save(out))
+            w = asyncio.run(_tts_stream(text, voice, rate, pitch, out))
             if os.path.getsize(out) > 1000:
-                return True
+                return w
         except Exception:
             time.sleep(1.5)
-    return False
+    return None
 
 
 def synth_line(text, cfg, cache):
-    """คืนเสียง (ก่อนใส่เอฟเฟกต์) — ถ้าทั้งประโยคไม่ผ่าน จะหั่นเป็นท่อนตามช่องว่างแล้วต่อกัน"""
+    """คืน (เสียงก่อนใส่เอฟเฟกต์, คำพร้อมเวลา) — ถ้าทั้งประโยคไม่ผ่าน จะหั่นเป็นท่อนตามช่องว่างแล้วต่อกัน"""
+    wj = cache + ".words.json"
     if os.path.exists(cache):
-        return decode(cache)
+        return decode(cache), (json.load(open(wj, encoding="utf-8")) if os.path.exists(wj) else [])
     tmp = cache + ".mp3"
     v, r, p = cfg["voice"], cfg.get("rate", "+0%"), cfg.get("pitch", "+0Hz")
-    if tts_try(text, v, r, p, tmp, 8):
-        x = trim(decode(tmp))
+    w = tts_try(text, v, r, p, tmp, 8)
+    if w is not None:
+        raw = decode(tmp); lead = lead_of(raw) / SR
+        x = trim(raw); words = [[a - lead, b - lead, t] for a, b, t in w]
     else:
-        parts = []
+        parts, words, pos = [], [], 0.0
         for chunk in text.split(" "):
-            if not tts_try(chunk, v, r, p, tmp, 18):
+            w = tts_try(chunk, v, r, p, tmp, 18)
+            if w is None:
                 raise RuntimeError(f"สร้างเสียงไม่ได้ (ลองเปลี่ยนคำ): {chunk}")
-            parts += [trim(decode(tmp)), np.zeros(int(0.07 * SR), np.float32)]
+            raw = decode(tmp); lead = lead_of(raw) / SR; seg = trim(raw)
+            words += [[pos + a - lead, pos + b - lead, t] for a, b, t in w]
+            parts += [seg, np.zeros(int(0.07 * SR), np.float32)]; pos += (len(seg) + int(0.07 * SR)) / SR
         x = np.concatenate(parts[:-1])
     os.remove(tmp) if os.path.exists(tmp) else None
     save_wav(x, cache)
-    return x
+    json.dump(words, open(wj, "w", encoding="utf-8"), ensure_ascii=False)
+    return x, words
 
 
 def apply_fx(x, fx):
@@ -437,8 +461,10 @@ def main(folder):
     clips = []
     for i, ln in enumerate(sc["lines"]):
         cfg = cast[ln["who"]]
-        x = synth_line(ln["text"], cfg, os.path.join(vdir, f"{i:02d}_{ln['who']}.wav"))
-        c = trim(apply_fx(x, cfg.get("fx")))
+        x, words = synth_line(ln["text"], cfg, os.path.join(vdir, f"{i:02d}_{ln['who']}.wav"))
+        fxd = apply_fx(x, cfg.get("fx")); lead2 = lead_of(fxd) / SR
+        c = trim(fxd)
+        ln["words"] = [[round(a - lead2, 3), round(b - lead2, 3), t] for a, b, t in words]
         # บีบเสียงพูดให้สม่ำเสมอ แล้วปรับทุกประโยคให้ดังเท่ากัน
         c = apply_fx(c, "acompressor=threshold=0.08:ratio=4:attack=5:release=80:makeup=2")
         speech = c[np.abs(c) > 0.02]

@@ -94,9 +94,25 @@ function subtitle(ln,lt){
     budget-=1;});
   ctx.restore();}
 
+
+// ---------- ซับแบบเด้งทีละคำ (EP.sub.mode = 'words') ----------
+function wordChunks(ln){if(ln._chunks)return ln._chunks;const out=[];let cur=null;
+  const vis=s=>s.replace(/[ัิ-ฺ็-๎]/g,'').length;
+  for(const[a,b,t]of(ln.words||[])){if(cur&&(vis(cur.t)>=(EP.sub.chunk||5)||vis(cur.t+t)>(EP.sub.maxChunk||9))){out.push(cur);cur=null;}
+    if(!cur)cur={a,b,t};else{cur.t+=t;cur.b=b;}}if(cur)out.push(cur);ln._chunks=out;return out;}
+function wordCaption(ln,lt){const ch=wordChunks(ln);if(!ch.length)return false;let k=-1;for(let i=0;i<ch.length;i++)if(lt>=ch[i].a-0.05)k=i;
+  if(k<0)return true;const c=ch[k];if(lt>c.b+0.6&&k===ch.length-1)return true;
+  const S=Object.assign({y:1300,x:510,maxW:740,size:112,f:'K',col:'#ffffff',hl:'#ffd23f',stroke:'#111',sw:24},EP.sub);
+  const isHl=(ln.hl||[]).some(h=>h.includes(c.t)||c.t.includes(h)||h.split(' ').some(p=>p&&c.t.includes(p)));
+  const p=E.back(prog(lt,c.a-0.05,c.a+0.12));ctx.save();ctx.translate(S.x,S.y);ctx.scale(lerp(0.6,1,p),lerp(0.6,1,p));
+  ctx.font=font(S.size,S.f,S.f==='K'?800:'');const w=ctx.measureText(c.t).width,fit=Math.min(1,S.maxW/w);ctx.scale(fit,fit);
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.lineWidth=S.sw+10;ctx.strokeStyle='rgba(0,0,0,0.35)';ctx.strokeText(c.t,6,10);
+  ctx.lineWidth=S.sw;ctx.strokeStyle=S.stroke;ctx.strokeText(c.t,0,0);ctx.fillStyle=isHl?S.hl:S.col;ctx.fillText(c.t,0,0);ctx.restore();return true;}
+
 function defaultCamera(name,lt){const s=1+0.09*(1-E.out(prog(lt,0,0.28)));ctx.translate(540,960);ctx.scale(s,s);ctx.translate(-540,-960);}
 
 window.init=async(tl,epUrl)=>{TL=tl;
+  await new Promise((res)=>{const s=document.createElement('script');s.src='lib/roundhead.js';s.onload=res;s.onerror=res;document.head.appendChild(s);});
   await new Promise((res,rej)=>{const s=document.createElement('script');s.src=epUrl;s.onload=res;s.onerror=rej;document.head.appendChild(s);});
   EP=window.EP;
   for(const f of['800 40px K','600 40px K','40px Sri','40px Chon','40px Itim','40px Mitr','40px Bai','40px Charm','40px Pattaya','40px Mali','40px Trirong','40px Kod','40px Sri2'])await document.fonts.load(f,'กขค');
@@ -122,7 +138,8 @@ window.draw=(t)=>{T=t;ctx.setTransform(1,0,0,1,0,0);ctx.globalAlpha=1;ctx.clearR
     EP.scenes[pl.scene](t-ps.s,Object.assign({},pl,{dur:ps.d}),pi);ctx.restore();ctx.globalAlpha=1;}
   if(EP.overlay)EP.overlay(t,ln,lt);
   const nextStart=i+1<L.length?L[i+1].start-0.12:endT;
-  if(t>=ln.start-0.05&&t<Math.max(ln.start+1.8,ln.start+ln.dur+0.2)&&t<nextStart)subtitle(ln,t-ln.start+0.05);
+  if(EP.sub&&EP.sub.mode==='words'&&ln.words&&ln.words.length){if(t>=ln.start-0.05&&t<nextStart)wordCaption(ln,t-ln.start);}
+  else if(t>=ln.start-0.05&&t<Math.max(ln.start+1.8,ln.start+ln.dur+0.2)&&t<nextStart)subtitle(ln,t-ln.start+0.05);
   if(EP.post)EP.post(t,ln,lt);
   if(t>endT&&EP.outro)EP.outro(prog(t,endT,endT+gap));
 };

@@ -68,3 +68,11 @@ Project root: the repository root (`E:\คลิปลงปักตระก�
    - set `days[D]` to the episode list,
    - bump `next_ep`.
 7. Final report in Thai: list the 10 clips (format → product), give the Drive folder link, and note anything that failed.
+
+## แนวใหม่ (ตั้งแต่ 23.11.2026): เรื่องยาวสไตล์หัวกลม วันละ 5 คลิป
+- โฟลเดอร์ชื่อ `clips/stNNN-<สินค้า>/` — daily_run หยิบ `st*` ก่อนเสมอ ถ้าหมดจึงใช้คลิปสั้นแบบเก่าที่ค้างคิว
+- ใช้คลัง `tools/lib/roundhead.js` (RH.person / RH.bg.* / RH.scroll / RH.bubble / RH.bigText / RH.basket ...)
+- ซับ `sub:{mode:'words', y:1330}` ขึ้นทีละคำตามเสียง (voice.py เก็บจังหวะคำใน timeline)
+- เรื่อง 13-17 ประโยค ยาว ~50-75 วิ: ปมปัญหา → ความรู้ (ทำไม) → เคล็ดลับ 2-3 ข้อ → คลี่คลาย → "<สินค้า> อยู่ในตะกร้าด้านล่าง"
+- ทุกตอนต้องมีเรื่อง ตัวละคร ฉาก และลูกเล่นป้ายบอกเวลาไม่ซ้ำกัน
+- ข้อความ/ของสำคัญอยู่ในโซน x 140-880, y 200-1450 (กันปุ่มของแอปบัง) ห้ามใช้อีโมจิ/สัญลักษณ์พิเศษ (คลาวด์ไม่มีฟอนต์)

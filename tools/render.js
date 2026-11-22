@@ -51,11 +51,11 @@ const FF = execSync(`${PY} -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ff
 
   const out = path.join(dir, path.basename(dir) + '.mp4');
   const ff = spawn(FF, ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(FPS), '-i', '-',
-    '-i', path.join(dir, 'audio.wav'), '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p',
+    '-i', path.join(dir, 'audio.wav'), '-c:v', 'libx264', '-preset', 'slow', '-tune', 'animation', '-crf', '15', '-maxrate', '3M', '-bufsize', '6M', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-b:a', '192k',
     '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
   const n = Math.ceil(tl.total * FPS);
   for (let i = 0; i < n; i++) {
-    const buf = await frame(i / FPS, 0.93);
+    const buf = await frame(i / FPS, 0.98);
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));
     if (i % 90 === 0) process.stdout.write(`\r${i}/${n}`);
   }
