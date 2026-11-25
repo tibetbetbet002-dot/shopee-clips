@@ -9,6 +9,11 @@ FF = imageio_ffmpeg.get_ffmpeg_exe()
 SR = 48000
 FPS = 30
 rng = np.random.default_rng(7)
+VOICE_POLISH = ("highpass=f=75,equalizer=f=200:t=q:w=1:g=2.5,equalizer=f=3200:t=q:w=1.2:g=-2.5,"
+                "equalizer=f=7500:t=q:w=1.5:g=-4,lowpass=f=12500,"
+                "acompressor=threshold=0.1:ratio=2.5:attack=8:release=120:makeup=1.6,"
+                "aecho=0.9:0.6:22|37:0.07|0.05")
+VOICES = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "voices.json"), encoding="utf-8"))
 VOICE_RMS = 0.16   # ความดังเสียงพูด (ทุกประโยคเท่ากัน)
 MUSIC_DB = -15     # เพลงเบากว่าเสียงพูดกี่ dB (ปรับต่อตอนได้ด้วย music.db)
 DUCK_DB = 9        # ตอนมีคนพูด เพลงหลบลงอีกกี่ dB
@@ -60,25 +65,41 @@ def tts_try(text, voice, rate, pitch, out, tries):
             if os.path.getsize(out) > 1000:
                 return w
         except Exception:
-            time.sleep(1.5)
+            time.sleep(min(20, 2 + 2 * _))
     return None
 
 
 def synth_line(text, cfg, cache):
     """คืน (เสียงก่อนใส่เอฟเฟกต์, คำพร้อมเวลา) — ถ้าทั้งประโยคไม่ผ่าน จะหั่นเป็นท่อนตามช่องว่างแล้วต่อกัน"""
     wj = cache + ".words.json"
-    if os.path.exists(cache):
-        return decode(cache), (json.load(open(wj, encoding="utf-8")) if os.path.exists(wj) else [])
     tmp = cache + ".mp3"
     v, r, p = cfg["voice"], cfg.get("rate", "+0%"), cfg.get("pitch", "+0Hz")
-    w = tts_try(text, v, r, p, tmp, 8)
+    v = VOICES.get(v, v)  # ชื่อเล่น/เสียงที่ถูกเลิกใช้ -> เสียงจริง
+    key = f"{text}|{v}|{r}|{p}|{cfg.get('keepPitch')}"
+    mk = cache + ".key"
+    if os.path.exists(cache) and os.path.exists(wj) and os.path.exists(mk) and open(mk, encoding="utf-8").read() == key:
+        return decode(cache), json.load(open(wj, encoding="utf-8"))
+    if not cfg.get("keepPitch"):
+        hz = max(-6, min(6, int(p.replace("Hz", "") or 0))); p = f"{hz:+d}Hz"
+        pr = max(-10, min(10, int(r.replace("%", "") or 0))); r = f"{pr:+d}%"
+    w = tts_try(text, v, r, p, tmp, 10)
     if w is not None:
         raw = decode(tmp); lead = lead_of(raw) / SR
         x = trim(raw); words = [[a - lead, b - lead, t] for a, b, t in w]
     else:
         parts, words, pos = [], [], 0.0
         for chunk in text.split(" "):
-            w = tts_try(chunk, v, r, p, tmp, 18)
+            w = tts_try(chunk, v, r, p, tmp, 14)
+            if w is None and len(chunk) > 12:  # หั่นครึ่งอีกรอบ
+                h = len(chunk) // 2
+                for sub in (chunk[:h], chunk[h:]):
+                    w2 = tts_try(sub, v, r, p, tmp, 14)
+                    if w2 is None:
+                        raise RuntimeError(f"สร้างเสียงไม่ได้: {sub}")
+                    raw = decode(tmp); lead = lead_of(raw) / SR; seg = trim(raw)
+                    words += [[pos + a - lead, pos + b - lead, t] for a, b, t in w2]
+                    parts += [seg, np.zeros(int(0.03 * SR), np.float32)]; pos += (len(seg) + int(0.03 * SR)) / SR
+                continue
             if w is None:
                 raise RuntimeError(f"สร้างเสียงไม่ได้ (ลองเปลี่ยนคำ): {chunk}")
             raw = decode(tmp); lead = lead_of(raw) / SR; seg = trim(raw)
@@ -88,6 +109,7 @@ def synth_line(text, cfg, cache):
     os.remove(tmp) if os.path.exists(tmp) else None
     save_wav(x, cache)
     json.dump(words, open(wj, "w", encoding="utf-8"), ensure_ascii=False)
+    open(mk, "w", encoding="utf-8").write(key)
     return x, words
 
 
@@ -426,6 +448,20 @@ def sfx(kind, dur=None):
     if kind == "riser":
         d = dur or 1.2; tt = t(d); f = 200 + 1500 * (tt / d) ** 2
         return (np.sin(2 * np.pi * np.cumsum(f) / SR) * 0.08 + lowpass(rng.standard_normal(len(tt)), 3) * 0.08) * (tt / d)
+    if kind == "drill":  # สว่านเจาะผนัง: หึ่งความถี่สูง + กระแทกเป็นจังหวะ
+        d = dur or 1.6; tt = t(d); f = 520 + 40 * np.sin(2 * np.pi * 3 * tt)
+        x = np.sign(np.sin(2 * np.pi * np.cumsum(f) / SR)) * 0.12 + rng.standard_normal(len(tt)) * 0.08
+        x *= 0.6 + 0.4 * (np.sin(2 * np.pi * 14 * tt) > 0)
+        return lowpass(x, 3) * np.minimum(1, tt * 20) * np.minimum(1, (d - tt) * 8)
+    if kind == "knock":
+        out = np.zeros(int(0.9 * SR))
+        for k in range(3):
+            tt = t(0.12); add(out, (np.sin(2 * np.pi * 140 * tt) * 0.6 + rng.standard_normal(len(tt)) * 0.2) * np.exp(-tt * 40), k * 0.25)
+        return out
+    if kind == "rainloop":
+        d = dur or 4; tt = t(d); return lowpass(rng.standard_normal(len(tt)) * 0.12, 6) * np.minimum(1, tt * 2) * np.minimum(1, (d - tt) * 2)
+    if kind == "meow":
+        tt = t(0.6); f = 700 + 300 * np.sin(np.pi * tt / 0.6); return np.sin(2 * np.pi * np.cumsum(f) / SR) * np.sin(np.pi * tt / 0.6) * 0.3
     if kind == "fan":
         d = dur or 2.0; tt = t(d); return lowpass(rng.standard_normal(len(tt)), 20) * 0.5 * np.minimum(1, tt * 2) * np.minimum(1, (d - tt) * 3)
     if kind == "gasp":
@@ -466,7 +502,7 @@ def main(folder):
         c = trim(fxd)
         ln["words"] = [[round(a - lead2, 3), round(b - lead2, 3), t] for a, b, t in words]
         # บีบเสียงพูดให้สม่ำเสมอ แล้วปรับทุกประโยคให้ดังเท่ากัน
-        c = apply_fx(c, "acompressor=threshold=0.08:ratio=4:attack=5:release=80:makeup=2")
+        c = apply_fx(c, VOICE_POLISH)
         speech = c[np.abs(c) > 0.02]
         rms = float(np.sqrt(np.mean(speech ** 2))) if len(speech) else 0.1
         c = c * (VOICE_RMS / max(rms, 1e-4)) * cfg.get("gain", 1.0)
@@ -479,7 +515,12 @@ def main(folder):
         rms = [float(np.sqrt(np.mean(c[k:k + hop] ** 2))) for k in range(0, len(c), hop)]
         mx = max(rms) or 1
         ln["env"] = [round(min(1, r / mx * 1.3), 2) for r in rms]
-        t += len(c) / SR + ln.get("pause", gap)
+        j = sc["lines"].index(ln); nx = sc["lines"][j + 1] if j + 1 < len(sc["lines"]) else None
+        auto = gap
+        if nx is not None and sc.get("naturalGaps", True):
+            auto = gap * (0.7 if nx["who"] == ln["who"] else 1.0) + (0.25 if nx.get("shot") or nx.get("scene") != ln.get("scene") else 0)
+        ln["pause"] = ln.get("pause", round(auto, 3))
+        t += len(c) / SR + ln["pause"]
     total = t - sc["lines"][-1].get("pause", gap) + outro
 
     voice = np.zeros(int(total * SR) + SR, np.float32)

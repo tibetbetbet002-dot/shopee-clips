@@ -1,0 +1,19 @@
+// เรื่องยาว #08 ฝนถล่มบนวินมอเตอร์ไซค์ — ของเฉพาะตอน: มอเตอร์ไซค์ โน้ตบุ๊ก ซองกันกระแทก แอ่งน้ำ
+const INK = '#151515';
+const ln8 = (w, c = INK) => { ctx.lineWidth = w; ctx.strokeStyle = c; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; };
+window.EP = STORY.make({ props: {
+  bike: (x, y, s, o) => { ctx.save(); ctx.translate(x + (o.go ? Math.sin(T * 30) * 2 : 0), y); ctx.scale(s * (o.flip ? -1 : 1), s);
+    for (const wx of [-230, 230]) { ctx.beginPath(); ctx.arc(wx, 120, 90, 0, Math.PI * 2); ctx.fillStyle = '#222'; ctx.fill(); ln8(8); ctx.stroke(); ctx.beginPath(); ctx.arc(wx, 120, 40, 0, Math.PI * 2); ctx.fillStyle = '#bbb'; ctx.fill(); ctx.stroke();
+      ctx.save(); ctx.translate(wx, 120); ctx.rotate(o.go ? T * 12 : 0); ctx.beginPath(); ctx.moveTo(-40, 0); ctx.lineTo(40, 0); ctx.moveTo(0, -40); ctx.lineTo(0, 40); ln8(6); ctx.stroke(); ctx.restore(); }
+    ctx.beginPath(); ctx.moveTo(-250, 60); ctx.quadraticCurveTo(-120, -40, 60, 0); ctx.lineTo(200, -10); ctx.lineTo(260, 90); ctx.lineTo(-180, 110); ctx.closePath(); ctx.fillStyle = o.col || '#e63946'; ctx.fill(); ln8(8); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(-200, -40, 280, 50, 24); ctx.fillStyle = '#333'; ctx.fill(); ln8(7); ctx.stroke(); ctx.beginPath(); ctx.moveTo(200, -10); ctx.lineTo(230, -170); ctx.lineTo(170, -190); ln8(12); ctx.stroke(); ctx.restore(); },
+  laptop: (x, y, s, o) => { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.beginPath(); ctx.moveTo(-210, 0); ctx.lineTo(210, 0); ctx.lineTo(180, -30); ctx.lineTo(-180, -30); ctx.closePath(); ctx.fillStyle = '#cfd5de'; ctx.fill(); ln8(8); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(-180, -300, 360, 270, 16); ctx.fillStyle = '#3a3f4e'; ctx.fill(); ln8(8); ctx.stroke(); ctx.beginPath(); ctx.roundRect(-160, -282, 320, 234, 8); ctx.fillStyle = o.off ? '#05070c' : (o.screen || '#8fd3ff'); ctx.fill();
+    if (o.text) txt(o.text, 0, -165, o.ts || 40, o.off ? '#555' : '#123', {f: 'K', w: 800}); if (o.wet) for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.ellipse(-150 + i * 60, -40 + Math.sin(i) * 20, 10, 14, 0, 0, Math.PI * 2); ctx.fillStyle = '#9fe3ff'; ctx.fill(); } ctx.restore(); },
+  sleeve: (x, y, s, o) => { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.rotate(o.rot || 0); ctx.beginPath(); ctx.roundRect(-230, -160, 460, 320, 40); ctx.fillStyle = o.col || '#5b6b8c'; ctx.fill(); ln8(9); ctx.stroke();
+    ctx.setLineDash([16, 12]); ctx.beginPath(); ctx.roundRect(-205, -135, 410, 270, 30); ln8(5, 'rgba(255,255,255,0.6)'); ctx.stroke(); ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(-230, -100); ctx.lineTo(230, -100); ln8(10, '#d4a017'); ctx.stroke();
+    ctx.beginPath(); ctx.roundRect(150, -118, 40, 36, 8); ctx.fillStyle = '#d4a017'; ctx.fill(); ln8(5); ctx.stroke(); for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(-120 + i * 80, 40, 30, 18, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fill(); } ctx.restore(); },
+  tote: (x, y, s, o) => { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.rotate(o.rot || 0); ctx.beginPath(); ctx.arc(0, -120, 60, Math.PI, 0); ln8(12); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-150, -120); ctx.lineTo(150, -120); ctx.lineTo(130, 120); ctx.lineTo(-130, 120); ctx.closePath(); ctx.fillStyle = o.wet ? '#9fa88a' : '#e9dfc7'; ctx.fill(); ln8(8); ctx.stroke(); ctx.restore(); },
+  puddle: (x, y, s, o) => { ctx.save(); ctx.translate(x, y); ctx.scale(s, s); ctx.beginPath(); ctx.ellipse(0, 0, 320, 60, 0, 0, Math.PI * 2); ctx.fillStyle = 'rgba(90,140,200,0.7)'; ctx.fill(); ln8(6, '#2f5d8a'); ctx.stroke();
+    if (o.splash) for (let i = 0; i < 10; i++) { const a = Math.PI + (i / 9) * Math.PI, r = 120 + ((T * 3 + i * 0.13) % 1) * 160; ctx.beginPath(); ctx.arc(Math.cos(a) * r, Math.sin(a) * r * 0.9, 14, 0, Math.PI * 2); ctx.fillStyle = '#9fe3ff'; ctx.fill(); } ctx.restore(); },
+} });

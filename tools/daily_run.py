@@ -36,6 +36,7 @@ def main():
     if a.only:
         queue = a.only.split(",")
     todo = queue[:count]
+    spare = queue[count:count + 3]  # ถ้าตอนไหนพัง ใช้ตอนถัดไปแทน จะได้ครบจำนวน
     print(f"วันที่ {day}: ทำ {len(todo)} ตอน, คิวเหลือหลังวันนี้ {max(0, len(queue) - len(todo))} ตอน")
     if not todo:
         print("คิวว่าง — ต้องเติมตอนใหม่"); sys.exit(2)
@@ -43,6 +44,8 @@ def main():
     out = os.path.join(ROOT, "พร้อมโพสต์", day); os.makedirs(out, exist_ok=True)
     caps, done = [], []
     for ep in todo:
+        if len(done) >= count:
+            break
         d = os.path.join("clips", ep)
         try:
             run([PY, os.path.join(T, "voice.py"), d])
@@ -53,6 +56,8 @@ def main():
             done.append(ep)
         except Exception as e:
             print("!! พลาด", ep, e)
+            if spare:
+                todo.append(spare.pop(0))
     open(os.path.join(out, "แคปชั่น.txt"), "w", encoding="utf-8").write("\n".join(caps))
 
     if not a.no_upload and done:
@@ -60,8 +65,8 @@ def main():
     if not a.only:
         reg["days"][day] = done
         json.dump(reg, open(REG, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print(f"เสร็จ {len(done)}/{len(todo)} ตอน")
-    if len(done) < len(todo):
+    print(f"เสร็จ {len(done)}/{count} ตอน")
+    if len(done) < min(count, len(queue)):
         sys.exit(1)
 
 

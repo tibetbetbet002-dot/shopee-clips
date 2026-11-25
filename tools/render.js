@@ -51,7 +51,7 @@ const FF = execSync(`${PY} -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ff
 
   const out = path.join(dir, path.basename(dir) + '.mp4');
   const ff = spawn(FF, ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(FPS), '-i', '-',
-    '-i', path.join(dir, 'audio.wav'), '-c:v', 'libx264', '-preset', 'slow', '-tune', 'animation', '-crf', '15', '-maxrate', '3M', '-bufsize', '6M', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-b:a', '192k',
+    '-i', path.join(dir, 'audio.wav'), '-c:v', 'libx264', '-preset', 'slow', '-tune', 'animation', '-crf', '15', '-maxrate', '2200k', '-bufsize', '4400k', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-b:a', '192k',
     '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
   const n = Math.ceil(tl.total * FPS);
   for (let i = 0; i < n; i++) {

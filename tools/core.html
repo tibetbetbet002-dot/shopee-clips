@@ -113,6 +113,7 @@ function defaultCamera(name,lt){const s=1+0.09*(1-E.out(prog(lt,0,0.28)));ctx.tr
 
 window.init=async(tl,epUrl)=>{TL=tl;
   await new Promise((res)=>{const s=document.createElement('script');s.src='lib/roundhead.js';s.onload=res;s.onerror=res;document.head.appendChild(s);});
+  await new Promise((res)=>{const s=document.createElement('script');s.src='lib/story.js';s.onload=res;s.onerror=res;document.head.appendChild(s);});
   await new Promise((res,rej)=>{const s=document.createElement('script');s.src=epUrl;s.onload=res;s.onerror=rej;document.head.appendChild(s);});
   EP=window.EP;
   for(const f of['800 40px K','600 40px K','40px Sri','40px Chon','40px Itim','40px Mitr','40px Bai','40px Charm','40px Pattaya','40px Mali','40px Trirong','40px Kod','40px Sri2'])await document.fonts.load(f,'กขค');

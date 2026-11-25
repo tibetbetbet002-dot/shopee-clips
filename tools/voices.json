@@ -1,0 +1,11 @@
+{
+ "_note": "ชื่อเล่นเสียง ใช้ใน script.json เช่น \"voice\": \"@female\" เปลี่ยนที่นี่ที่เดียว มีผลทุกตอน",
+ "@narrator": "th-TH-NiwatNeural",
+ "@male": "th-TH-NiwatNeural",
+ "@male2": "en-US-AndrewMultilingualNeural",
+ "@male3": "en-US-BrianMultilingualNeural",
+ "@female": "en-US-EmmaMultilingualNeural",
+ "@female2": "en-US-AvaMultilingualNeural",
+ "@female3": "fr-FR-VivienneMultilingualNeural",
+ "th-TH-PremwadeeNeural": "en-US-EmmaMultilingualNeural"
+}
