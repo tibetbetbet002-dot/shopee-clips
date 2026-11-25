@@ -9,9 +9,9 @@
   "kla": {"outfit": "#3ec1d3", "hair": "spiky", "hairCol": "#1d1d1d", "pattern": "stripe", "belt": false}
  },
  "cast": {
-  "narr": {"voice": "@narrator", "rate": "+4%"},
-  "fahsai": {"voice": "@female2", "rate": "+6%"},
-  "kla": {"voice": "@male2", "rate": "+10%", "pitch": "+6Hz"}
+  "narr": {"voice": "fr-FR-VivienneMultilingualNeural", "rate": "+4%"},
+  "fahsai": {"voice": "en-US-EmmaMultilingualNeural", "rate": "+6%"},
+  "kla": {"voice": "fr-FR-RemyMultilingualNeural", "rate": "+10%", "pitch": "+6Hz"}
  },
  "music": {"style": "horror", "bpm": 72, "db": -20},
  "lines": [

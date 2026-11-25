@@ -6,10 +6,10 @@
  "gap": 0.35,
  "outro": 2.2,
  "cast": {
-  "narr": {"voice": "th-TH-PremwadeeNeural", "rate": "+0%", "pitch": "+0Hz"},
-  "phum": {"voice": "th-TH-NiwatNeural", "rate": "+8%", "pitch": "+10Hz"},
-  "mom": {"voice": "th-TH-PremwadeeNeural", "rate": "+6%", "pitch": "-6Hz"},
-  "sheep": {"voice": "th-TH-NiwatNeural", "rate": "+14%", "pitch": "+28Hz"}
+  "narr": {"voice": "en-US-EmmaMultilingualNeural", "rate": "+0%", "pitch": "+0Hz"},
+  "phum": {"voice": "ko-KR-HyunsuMultilingualNeural", "rate": "+8%", "pitch": "+10Hz"},
+  "mom": {"voice": "pt-BR-ThalitaMultilingualNeural", "rate": "+6%", "pitch": "-6Hz"},
+  "sheep": {"voice": "it-IT-GiuseppeMultilingualNeural", "rate": "+14%", "pitch": "+28Hz"}
  },
  "music": {"style": "chip", "bpm": 92, "db": -18},
  "lines": [

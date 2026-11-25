@@ -10,11 +10,11 @@
   "boss": {"outfit": "#2b3a67", "hair": "neat", "hairCol": "#888", "mustache": true, "tie": "#e74c3c", "collar": true}
  },
  "cast": {
-  "narr": {"voice": "@narrator", "rate": "+6%"},
-  "pong": {"voice": "@male2", "rate": "+6%"},
-  "ant": {"voice": "@male3", "rate": "+14%"},
-  "nan": {"voice": "@female", "rate": "+4%"},
-  "boss": {"voice": "@male", "rate": "+2%", "pitch": "-4Hz"}
+  "narr": {"voice": "th-TH-NiwatNeural", "rate": "+6%"},
+  "pong": {"voice": "it-IT-GiuseppeMultilingualNeural", "rate": "+6%"},
+  "ant": {"voice": "ko-KR-HyunsuMultilingualNeural", "rate": "+14%"},
+  "nan": {"voice": "pt-BR-ThalitaMultilingualNeural", "rate": "+4%"},
+  "boss": {"voice": "en-AU-WilliamMultilingualNeural", "rate": "+2%", "pitch": "-4Hz"}
  },
  "music": {"style": "chip", "bpm": 120, "db": -19},
  "lines": [

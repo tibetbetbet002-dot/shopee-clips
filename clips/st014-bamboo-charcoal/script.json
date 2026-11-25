@@ -9,9 +9,9 @@
   "pan": {"outfit": "#9ad7ff", "hair": "pony", "hairCol": "#2a1f1a", "collar": true, "belt": false}
  },
  "cast": {
-  "narr": {"voice": "@narrator", "rate": "+0%"},
-  "chin": {"voice": "@male3", "rate": "-4%"},
-  "pan": {"voice": "@female2", "rate": "+6%"}
+  "narr": {"voice": "fr-FR-RemyMultilingualNeural", "rate": "+0%"},
+  "chin": {"voice": "en-US-AndrewMultilingualNeural", "rate": "-4%"},
+  "pan": {"voice": "fr-FR-VivienneMultilingualNeural", "rate": "+6%"}
  },
  "music": {"style": "noir", "bpm": 80, "db": -19},
  "lines": [

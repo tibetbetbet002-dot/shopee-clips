@@ -9,10 +9,10 @@
   "fon": {"outfit": "#ff8fab", "hair": "pony", "hairCol": "#3b2418", "collar": true, "belt": false}
  },
  "cast": {
-  "narr": {"voice": "@narrator", "rate": "+6%"},
-  "tor": {"voice": "@male2", "rate": "+6%"},
-  "turtle": {"voice": "@male3", "rate": "-10%"},
-  "fon": {"voice": "@female2", "rate": "+8%"}
+  "narr": {"voice": "th-TH-NiwatNeural", "rate": "+6%"},
+  "tor": {"voice": "en-US-AndrewMultilingualNeural", "rate": "+6%"},
+  "turtle": {"voice": "en-AU-WilliamMultilingualNeural", "rate": "-10%"},
+  "fon": {"voice": "pt-BR-ThalitaMultilingualNeural", "rate": "+8%"}
  },
  "music": {"style": "doc", "bpm": 92, "db": -19},
  "lines": [

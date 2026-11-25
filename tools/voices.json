@@ -23,5 +23,10 @@
   "en-US-EmmaMultilingualNeural": "Leda",
   "en-US-AvaMultilingualNeural": "Aoede",
   "fr-FR-VivienneMultilingualNeural": "Zephyr"
- }
+ },
+ "@male4": "en-AU-WilliamMultilingualNeural",
+ "@male5": "fr-FR-RemyMultilingualNeural",
+ "@male6": "it-IT-GiuseppeMultilingualNeural",
+ "@male7": "ko-KR-HyunsuMultilingualNeural",
+ "@female4": "pt-BR-ThalitaMultilingualNeural"
 }

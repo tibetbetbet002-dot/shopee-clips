@@ -11,11 +11,11 @@
   "tae": {"outfit": "#7bd389", "hair": "tuft", "hairCol": "#222", "collar": true}
  },
  "cast": {
-  "narr": {"voice": "@narrator", "rate": "+6%"},
-  "bell": {"voice": "@female", "rate": "+6%"},
-  "staff": {"voice": "@male2", "rate": "+6%"},
-  "tech": {"voice": "@male3", "rate": "+2%"},
-  "tae": {"voice": "@male2", "rate": "+10%"}
+  "narr": {"voice": "en-US-EmmaMultilingualNeural", "rate": "+6%"},
+  "bell": {"voice": "en-US-AvaMultilingualNeural", "rate": "+6%"},
+  "staff": {"voice": "it-IT-GiuseppeMultilingualNeural", "rate": "+6%"},
+  "tech": {"voice": "en-US-BrianMultilingualNeural", "rate": "+2%"},
+  "tae": {"voice": "ko-KR-HyunsuMultilingualNeural", "rate": "+10%"}
  },
  "music": {"style": "funk", "bpm": 104, "db": -19},
  "lines": [
