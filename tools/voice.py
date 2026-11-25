@@ -120,6 +120,7 @@ GEM_VOICES = VOICES.get("gemini", {})
 GEM_STYLE = ("Read the following Thai line aloud as a natural, expressive Thai voice actor in a short funny cartoon. "
              "Sound like a real person talking, relaxed pacing, natural Thai intonation. {extra}Only speak the line itself:\n")
 _gem_ok_model = None
+GEM_OFF = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".gemini_off")
 _gem_last = 0.0
 
 
@@ -165,8 +166,9 @@ def gem_tts(text, voice, extra):
                     break  # ลองรุ่นถัดไป
                 if e.code in (400, 401, 403):
                     raise RuntimeError("รหัส Gemini ใช้ไม่ได้: " + last)
-                if e.code == 429 and b"PerDay" in (last or "").encode():
-                    raise RuntimeError("โควตา Gemini วันนี้หมด: " + last)
+                if e.code == 429 and any(k in last for k in ("PerDay", "billing", "exceeded your current quota")):
+                    open(GEM_OFF, "w").write(time.strftime("%Y-%m-%d"))  # วันนี้ไม่ลองอีก ไม่เสียเวลาตอนถัดไป
+                    raise RuntimeError("โควตา Gemini หมด/ไม่มีโควตาฟรี: " + last)
                 time.sleep(min(60, 10 * (attempt + 1)))
             except Exception as e:
                 last = f"{model}: {e}"
@@ -575,7 +577,8 @@ def main(folder):
     clips = []
     # เลือกเสียง: Gemini ทั้งตอน (ถ้ามีรหัส) — ถ้าประโยคไหนพัง ใช้เสียงเดิมทั้งตอนแทน จะได้ไม่ปนกัน
     raw = None
-    if os.environ.get("GEMINI_API_KEY") and sc.get("tts", "gemini") != "edge":
+    gem_off = os.path.exists(GEM_OFF) and open(GEM_OFF).read().strip() == time.strftime("%Y-%m-%d")
+    if os.environ.get("GEMINI_API_KEY") and sc.get("tts", "gemini") != "edge" and not gem_off:
         try:
             raw = [gem_line(ln["text"], cast[ln["who"]], os.path.join(vdir, f"{i:02d}_{ln['who']}.wav")) for i, ln in enumerate(sc["lines"])]
             print("เสียงพากย์: Gemini")
