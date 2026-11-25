@@ -34,6 +34,7 @@ jobs:
           DRIVE_UPLOAD_URL: ${{ secrets.DRIVE_UPLOAD_URL }}
           DRIVE_UPLOAD_KEY: ${{ secrets.DRIVE_UPLOAD_KEY }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GOOGLE_TTS_KEY: ${{ secrets.GOOGLE_TTS_KEY }}
           CHROME_PATH: /usr/bin/google-chrome
           PYTHONIOENCODING: utf-8
           ONLY: ${{ github.event.inputs.only }}

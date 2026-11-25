@@ -193,6 +193,46 @@ def gem_line(text, cfg, cache):
     return xg, [[a * k, b * k, t] for a, b, t in we]
 
 
+# ---------------- เสียง Google Cloud Chirp 3 HD (ฟรีเดือนละ 1 ล้านตัวอักษร) — ใช้เมื่อมี GOOGLE_TTS_KEY ----------------
+def gcloud_tts(text, voice):
+    import base64, urllib.request, urllib.error
+    body = json.dumps({"input": {"text": text}, "voice": {"languageCode": "th-TH", "name": f"th-TH-Chirp3-HD-{voice}"},
+                       "audioConfig": {"audioEncoding": "LINEAR16", "sampleRateHertz": 24000}}).encode()
+    last = None
+    for attempt in range(4):
+        req = urllib.request.Request("https://texttospeech.googleapis.com/v1/text:synthesize", data=body,
+                                     headers={"Content-Type": "application/json", "X-Goog-Api-Key": os.environ["GOOGLE_TTS_KEY"]})
+        try:
+            wav = base64.b64decode(json.loads(urllib.request.urlopen(req, timeout=90).read())["audioContent"])
+            raw = subprocess.run([FF, "-loglevel", "error", "-i", "-", "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"],
+                                 input=wav, capture_output=True, check=True).stdout
+            return np.frombuffer(raw, np.int16).astype(np.float32) / 32768
+        except urllib.error.HTTPError as e:
+            last = f"HTTP {e.code}: {e.read()[:300]!r}"
+            if e.code in (400, 401, 403, 404):
+                raise RuntimeError("Google TTS ใช้ไม่ได้: " + last)
+            time.sleep(5 * (attempt + 1))
+        except Exception as e:
+            last = str(e); time.sleep(5)
+    raise RuntimeError("Google TTS ใช้ไม่ได้: " + str(last))
+
+
+def gcloud_line(text, cfg, cache):
+    xe, we = synth_line(text, cfg, cache)
+    gv = gem_voice(cfg)  # ชื่อเสียงชุดเดียวกับ Gemini (Charon, Puck, Kore, ...)
+    gc, gk = cache + ".gct.wav", cache + ".gct.key"
+    key = f"{text}|{gv}"
+    if os.path.exists(gc) and os.path.exists(gk) and open(gk, encoding="utf-8").read() == key:
+        xg = decode(gc)
+    else:
+        xg = trim(gcloud_tts(text, gv))
+        if len(xg) < SR * 0.3:
+            raise RuntimeError("Google TTS ส่งเสียงสั้นผิดปกติ")
+        save_wav(xg, gc); open(gk, "w", encoding="utf-8").write(key)
+    k = len(xg) / max(1, len(xe))
+    return xg, [[a * k, b * k, t] for a, b, t in we]
+
+
 def apply_fx(x, fx):
     if not fx:
         return x
@@ -577,8 +617,15 @@ def main(folder):
     clips = []
     # เลือกเสียง: Gemini ทั้งตอน (ถ้ามีรหัส) — ถ้าประโยคไหนพัง ใช้เสียงเดิมทั้งตอนแทน จะได้ไม่ปนกัน
     raw = None
+    if os.environ.get("GOOGLE_TTS_KEY") and sc.get("tts") != "edge":
+        try:
+            raw = [gcloud_line(ln["text"], cast[ln["who"]], os.path.join(vdir, f"{i:02d}_{ln['who']}.wav")) for i, ln in enumerate(sc["lines"])]
+            print("เสียงพากย์: Google Chirp 3 HD")
+        except Exception as e:
+            print("Google TTS ใช้ไม่ได้ -> ลองตัวถัดไป:", str(e)[:300])
+            raw = None
     gem_off = os.path.exists(GEM_OFF) and open(GEM_OFF).read().strip() == time.strftime("%Y-%m-%d")
-    if os.environ.get("GEMINI_API_KEY") and sc.get("tts", "gemini") != "edge" and not gem_off:
+    if os.environ.get("GEMINI_API_KEY") and sc.get("tts", "gemini") != "edge" and not gem_off and raw is None:
         try:
             raw = [gem_line(ln["text"], cast[ln["who"]], os.path.join(vdir, f"{i:02d}_{ln['who']}.wav")) for i, ln in enumerate(sc["lines"])]
             print("เสียงพากย์: Gemini")
