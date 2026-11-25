@@ -3,7 +3,16 @@ name: daily-clips
 on:
   schedule:
     - cron: "0 23 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      only:
+        description: "ทำเฉพาะตอนเหล่านี้ (คั่นด้วย ,) เว้นว่าง = ตามคิวปกติ"
+        required: false
+        default: ""
+      date:
+        description: "ชื่อโฟลเดอร์ในไดรฟ์ (เว้นว่าง = วันนี้)"
+        required: false
+        default: ""
 permissions:
   contents: write
 jobs:
@@ -27,7 +36,9 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CHROME_PATH: /usr/bin/google-chrome
           PYTHONIOENCODING: utf-8
-        run: python tools/daily_run.py
+          ONLY: ${{ github.event.inputs.only }}
+          DAY: ${{ github.event.inputs.date }}
+        run: python tools/daily_run.py ${ONLY:+--only "$ONLY"} ${DAY:+--date "$DAY"}
       - name: บันทึกว่าลงตอนไหนไปแล้ว
         if: always()
         run: |
