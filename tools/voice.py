@@ -113,6 +113,84 @@ def synth_line(text, cfg, cache):
     return x, words
 
 
+# ---------------- เสียง Gemini (ธรรมชาติกว่า) — ใช้เมื่อมีรหัส GEMINI_API_KEY ----------------
+GEM_MODELS = [m for m in os.environ.get("GEMINI_TTS_MODEL", "").split(",") if m] + [
+    "gemini-2.5-flash-preview-tts", "gemini-2.5-flash-tts", "gemini-2.5-pro-preview-tts"]
+GEM_VOICES = VOICES.get("gemini", {})
+GEM_STYLE = ("Read the following Thai line aloud as a natural, expressive Thai voice actor in a short funny cartoon. "
+             "Sound like a real person talking, relaxed pacing, natural Thai intonation. {extra}Only speak the line itself:\n")
+_gem_ok_model = None
+_gem_last = 0.0
+
+
+def gem_voice(cfg):
+    if cfg.get("gvoice"):
+        return cfg["gvoice"]
+    v = cfg["voice"]
+    return GEM_VOICES.get(v) or GEM_VOICES.get(VOICES.get(v, v)) or GEM_VOICES.get("@narrator", "Charon")
+
+
+def gem_tts(text, voice, extra):
+    """เรียก Gemini ครั้งเดียว -> เสียง float 48k (หรือโยน error)"""
+    global _gem_ok_model, _gem_last
+    import base64, urllib.request, urllib.error
+    key = os.environ["GEMINI_API_KEY"]
+    body = json.dumps({"contents": [{"parts": [{"text": GEM_STYLE.format(extra=extra + " " if extra else "") + text}]}],
+                       "generationConfig": {"responseModalities": ["AUDIO"],
+                                            "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}}}}).encode()
+    models = [_gem_ok_model] if _gem_ok_model else GEM_MODELS
+    last = None
+    for model in models:
+        for attempt in range(6):
+            wait = 6.5 - (time.time() - _gem_last)  # โควตาฟรี: ไม่เกิน ~10 ครั้ง/นาที
+            if wait > 0:
+                time.sleep(wait)
+            _gem_last = time.time()
+            req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
+                                         data=body, headers={"Content-Type": "application/json", "x-goog-api-key": key})
+            try:
+                r = json.loads(urllib.request.urlopen(req, timeout=120).read())
+                part = r["candidates"][0]["content"]["parts"][0]["inlineData"]
+                rate = 24000
+                if "rate=" in part.get("mimeType", ""):
+                    rate = int(part["mimeType"].split("rate=")[1].split(";")[0])
+                pcm = base64.b64decode(part["data"])
+                raw = subprocess.run([FF, "-loglevel", "error", "-f", "s16le", "-ar", str(rate), "-ac", "1", "-i", "-",
+                                      "-f", "s16le", "-ac", "1", "-ar", str(SR), "-"], input=pcm, capture_output=True, check=True).stdout
+                _gem_ok_model = model
+                return np.frombuffer(raw, np.int16).astype(np.float32) / 32768
+            except urllib.error.HTTPError as e:
+                last = f"{model} HTTP {e.code}: {e.read()[:200]!r}"
+                if e.code == 404:
+                    break  # ลองรุ่นถัดไป
+                if e.code in (400, 401, 403):
+                    raise RuntimeError("รหัส Gemini ใช้ไม่ได้: " + last)
+                if e.code == 429 and b"PerDay" in (last or "").encode():
+                    raise RuntimeError("โควตา Gemini วันนี้หมด: " + last)
+                time.sleep(min(60, 10 * (attempt + 1)))
+            except Exception as e:
+                last = f"{model}: {e}"
+                time.sleep(5)
+    raise RuntimeError("Gemini ใช้ไม่ได้: " + str(last))
+
+
+def gem_line(text, cfg, cache):
+    """เสียง Gemini + เวลาคำ (ยืมการตัดคำ/จังหวะจากเสียงเดิม แล้วยืดให้พอดี)"""
+    xe, we = synth_line(text, cfg, cache)  # เสียงเดิม: ใช้เอาตำแหน่งคำ
+    gv, extra = gem_voice(cfg), cfg.get("style", "")
+    gc, gk = cache + ".gem.wav", cache + ".gem.key"
+    key = f"{text}|{gv}|{extra}|{GEM_STYLE}"
+    if os.path.exists(gc) and os.path.exists(gk) and open(gk, encoding="utf-8").read() == key:
+        xg = decode(gc)
+    else:
+        xg = trim(gem_tts(text, gv, extra))
+        if len(xg) < SR * 0.3:
+            raise RuntimeError("Gemini ส่งเสียงสั้นผิดปกติ")
+        save_wav(xg, gc); open(gk, "w", encoding="utf-8").write(key)
+    k = len(xg) / max(1, len(xe))
+    return xg, [[a * k, b * k, t] for a, b, t in we]
+
+
 def apply_fx(x, fx):
     if not fx:
         return x
@@ -495,9 +573,21 @@ def main(folder):
     intro, gap, outro = sc.get("intro", 1.1), sc.get("gap", 0.28), sc.get("outro", 1.6)
     vdir = os.path.join(folder, "voice"); os.makedirs(vdir, exist_ok=True)
     clips = []
+    # เลือกเสียง: Gemini ทั้งตอน (ถ้ามีรหัส) — ถ้าประโยคไหนพัง ใช้เสียงเดิมทั้งตอนแทน จะได้ไม่ปนกัน
+    raw = None
+    if os.environ.get("GEMINI_API_KEY") and sc.get("tts", "gemini") != "edge":
+        try:
+            raw = [gem_line(ln["text"], cast[ln["who"]], os.path.join(vdir, f"{i:02d}_{ln['who']}.wav")) for i, ln in enumerate(sc["lines"])]
+            print("เสียงพากย์: Gemini")
+        except Exception as e:
+            print("Gemini ใช้ไม่ได้ -> ใช้เสียงเดิม:", str(e)[:300])
+            raw = None
+    if raw is None:
+        raw = [synth_line(ln["text"], cast[ln["who"]], os.path.join(vdir, f"{i:02d}_{ln['who']}.wav")) for i, ln in enumerate(sc["lines"])]
+        print("เสียงพากย์: Microsoft (เดิม)")
     for i, ln in enumerate(sc["lines"]):
         cfg = cast[ln["who"]]
-        x, words = synth_line(ln["text"], cfg, os.path.join(vdir, f"{i:02d}_{ln['who']}.wav"))
+        x, words = raw[i]
         fxd = apply_fx(x, cfg.get("fx")); lead2 = lead_of(fxd) / SR
         c = trim(fxd)
         ln["words"] = [[round(a - lead2, 3), round(b - lead2, 3), t] for a, b, t in words]

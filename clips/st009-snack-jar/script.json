@@ -3,7 +3,7 @@
  "series": "ป๋องสายกิน",
  "product": "โหลสุญญากาศเก็บขนม",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "กองทัพมดบุกโต๊ะทำงาน", "intro": "กองทัพมดบุกโต๊ะ!", "hl": "#ffd23f", "endBg": ["#fff1c9", "#ffd36b"], "productProp": "jar", "endScale": 0.9},
+ "theme": {"hook": {"top": "มดบุกโต๊ะทำงาน!", "big": "ขนมหายเกลี้ยง"}, "bar": "กองทัพมดบุกโต๊ะทำงาน", "intro": "กองทัพมดบุกโต๊ะ!", "hl": "#ffd23f", "endBg": ["#fff1c9", "#ffd36b"], "productProp": "jar", "endScale": 0.9},
  "looks": {
   "pong": {"outfit": "#ffd23f", "hair": "tuft", "hairCol": "#222", "collar": true, "blush": true},
   "nan": {"outfit": "#7b5cff", "hair": "pony", "hairCol": "#2a1f1a", "glasses": true, "collar": true, "belt": false},

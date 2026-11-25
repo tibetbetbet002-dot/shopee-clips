@@ -3,7 +3,7 @@
  "series": "สงครามเสียงดัง",
  "product": "ที่อุดหูโฟมลดเสียง",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "แพร VS สว่านข้างห้อง", "intro": "สงครามสว่าน 5 วัน", "hl": "#ffd23f", "endBg": ["#ffe0b8", "#ffb870"], "productProp": "earplug", "endScale": 1.3},
+ "theme": {"hook": {"top": "เพื่อนบ้านเจาะผนัง 5 วัน!", "big": "นอนไม่หลับเลย"}, "bar": "แพร VS สว่านข้างห้อง", "intro": "สงครามสว่าน 5 วัน", "hl": "#ffd23f", "endBg": ["#ffe0b8", "#ffb870"], "productProp": "earplug", "endScale": 1.3},
  "looks": {
   "prae": {"outfit": "#ff7aa2", "hair": "pony", "hairCol": "#3b2418", "collar": true, "belt": false},
   "lung": {"outfit": "#ff9f1c", "hair": "cap", "capCol": "#3a86ff", "mustache": true, "hairCol": "#555", "pattern": "check"},

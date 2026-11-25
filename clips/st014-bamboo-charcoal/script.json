@@ -3,7 +3,7 @@
  "series": "คดีห้องอับชื้น",
  "product": "ถ่านไม้ไผ่ดูดกลิ่น",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "นักสืบกลิ่นปริศนา", "intro": "นักสืบกลิ่นปริศนา", "hl": "#c6ff7a", "endBg": ["#efe6d2", "#cdb892"], "productProp": "charcoal", "endScale": 0.8},
+ "theme": {"hook": {"top": "ห้องเหม็นอับปริศนา", "big": "ใครคือตัวการ?"}, "bar": "นักสืบกลิ่นปริศนา", "intro": "นักสืบกลิ่นปริศนา", "hl": "#c6ff7a", "endBg": ["#efe6d2", "#cdb892"], "productProp": "charcoal", "endScale": 0.8},
  "looks": {
   "chin": {"outfit": "#b08968", "hair": "beanie", "capCol": "#3b3b3b", "collar": true, "mustache": true, "hairCol": "#333", "pattern": "check"},
   "pan": {"outfit": "#9ad7ff", "hair": "pony", "hairCol": "#2a1f1a", "collar": true, "belt": false}

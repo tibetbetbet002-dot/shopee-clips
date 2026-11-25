@@ -3,7 +3,7 @@
  "series": "ออฟฟิศสองขั้ว",
  "product": "ผ้าห่มคลุมไหล่ผืนเล็ก",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "สงครามรีโมทแอร์", "intro": "สงครามรีโมทแอร์", "hl": "#7fdcff", "endBg": ["#ffd6e4", "#ff9fbf"], "productProp": "shawl", "productOpt": {"col": "#ff8fab"}, "endScale": 1.3},
+ "theme": {"hook": {"top": "ใครแอบลดแอร์?!", "big": "เหลือ 18 องศา"}, "bar": "สงครามรีโมทแอร์", "intro": "สงครามรีโมทแอร์", "hl": "#7fdcff", "endBg": ["#ffd6e4", "#ff9fbf"], "productProp": "shawl", "productOpt": {"col": "#ff8fab"}, "endScale": 1.3},
  "looks": {
   "beam": {"outfit": "#ff8a3d", "hair": "spiky", "hairCol": "#1d1d1d", "collar": true},
   "mint": {"outfit": "#9ad7ff", "hair": "bow", "bowCol": "#ffffff", "hairCol": "#3b2418", "collar": true, "belt": false},

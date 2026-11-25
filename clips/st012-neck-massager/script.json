@@ -3,7 +3,7 @@
  "series": "เต่าทวดเข้าฝัน",
  "product": "ไม้นวดคอบ่า",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "มนุษย์เต่าออฟฟิศ", "intro": "มนุษย์เต่าออฟฟิศ", "hl": "#c6ff7a", "endBg": ["#d9f7c9", "#9be07a"], "productProp": "massager", "endScale": 0.8},
+ "theme": {"hook": {"top": "คอยื่นเหมือนเต่า?", "big": "เช็กตัวเองด่วน"}, "bar": "มนุษย์เต่าออฟฟิศ", "intro": "มนุษย์เต่าออฟฟิศ", "hl": "#c6ff7a", "endBg": ["#d9f7c9", "#9be07a"], "productProp": "massager", "endScale": 0.8},
  "looks": {
   "tor": {"outfit": "#5c7cfa", "hair": "neat", "hairCol": "#222", "glasses": true, "collar": true},
   "fon": {"outfit": "#ff8fab", "hair": "pony", "hairCol": "#3b2418", "collar": true, "belt": false}

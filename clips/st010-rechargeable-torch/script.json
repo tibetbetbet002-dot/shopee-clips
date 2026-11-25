@@ -3,7 +3,7 @@
  "series": "ฟ้าใสกับห้าชั่วโมงที่หายไป",
  "product": "ไฟฉายชาร์จไฟ ไฟฉุกเฉิน",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "ไฟดับคืนก่อนส่งงาน", "intro": "ไฟดับคืนก่อนส่งงาน", "hl": "#ffd23f", "endBg": ["#2b3a67", "#1d2648"], "productProp": "torch", "productOpt": {"on": false}, "endScale": 1.1},
+ "theme": {"hook": {"top": "ไฟดับคืนส่งงาน!", "big": "งานหายหมด?!"}, "bar": "ไฟดับคืนก่อนส่งงาน", "intro": "ไฟดับคืนก่อนส่งงาน", "hl": "#ffd23f", "endBg": ["#2b3a67", "#1d2648"], "productProp": "torch", "productOpt": {"on": false}, "endScale": 1.1},
  "looks": {
   "fahsai": {"outfit": "#ff6b6b", "hair": "bow", "bowCol": "#ffd23f", "hairCol": "#2a1f1a", "collar": true, "belt": false},
   "kla": {"outfit": "#3ec1d3", "hair": "spiky", "hairCol": "#1d1d1d", "pattern": "stripe", "belt": false}

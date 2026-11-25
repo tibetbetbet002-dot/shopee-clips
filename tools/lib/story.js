@@ -151,9 +151,14 @@ const STORY = (() => {
   function make(extra = {}) {
     Object.assign(PROPS, extra.props || {}); Object.assign(BG, extra.bgs || {}); LOOKS = TL.looks || {}; const th = TL.theme || {};
     const scenes = {}, shotOf = {}; let cur = null;
+    const bad3 = {}; let use3d = typeof S3 !== 'undefined' && TL.style !== '2d', shots3 = {}, env = {PROPS, LOOKS, talk}; let end3 = null; if (use3d) try { S3.init(); } catch (e) { console.error('3D init fail -> 2D', e && e.message); use3d = false; }
     TL.lines.forEach((ln, i) => { if (ln.shot || !cur) { cur = 's' + i; shotOf[cur] = ln.shot || {bg: 'studio'}; } ln.scene = cur; });
     for (const name in shotOf) { const sh = shotOf[name];
-      scenes[name] = (lt, ln) => { const t = T - ln.start; ctx.save(); const cam = ln.cam || sh.cam || 'push';
+      scenes[name] = (lt, ln) => { const t = T - ln.start;
+        if (use3d && !bad3[name]) try { if (!shots3[name]) { shots3[name] = S3.build(sh, Object.keys(shotOf).indexOf(name), env); shots3[name].camMode = sh.cam; }
+          ctx.save(); ctx.drawImage(S3.render(shots3[name], lt, ln, env), 0, 0); doFx(sh.under); if (extra.draw) extra.draw(name, lt, ln);
+          doFx(sh.fx); doFx((ln.fx || []).filter(f => f !== 'shake')); pops(ln.pop, t, ln.dur); banner(ln.banner, t); ctx.restore(); return; } catch (e) { console.error('3D scene fail -> 2D', name, e && e.message); bad3[name] = 1; ctx.restore(); }
+        ctx.save(); const cam = ln.cam || sh.cam || 'push';
         if (cam === 'shake' || (ln.fx || []).includes('shake')) ctx.translate(Math.sin(T * 47) * 8, Math.cos(T * 39) * 6);
         bg(sh.bg); drawProps(sh.props, 'back'); doFx(sh.under); drawCast(sh.cast, ln, ln.act || {}, lt); drawProps(sh.props, 'front'); if (extra.draw) extra.draw(name, lt, ln);
         doFx(sh.fx); doFx((ln.fx || []).filter(f => f !== 'shake')); pops(ln.pop, t, ln.dur); banner(ln.banner, t); ctx.restore(); }; }
@@ -161,14 +166,21 @@ const STORY = (() => {
     const productArt = (x, y, s) => { const n = th.productProp; if (n && PROPS[n]) PROPS[n](x, y, s, th.productOpt || {}); else PROPS.box(x, y, s, {text: TL.product, ts: 34}); };
     return {font: 'K', scenes, sceneTime: true, xfade: 0.25,
       sub: Object.assign({mode: 'words', y: 1330, size: 104, chunk: 5, hl: th.hl || '#ffd23f'}, th.sub || {}),
-      camera(name, lt, ln) { const sh = shotOf[name] || {}, cam = ln.cam || sh.cam || 'push', k = E.out(prog(lt, 0, Math.max(ln.dur, 3))), pk = 1 + 0.04 * (1 - E.out(prog(lt, 0, 0.25)));
+      camera(name, lt, ln) { if (use3d) return; const sh = shotOf[name] || {}, cam = ln.cam || sh.cam || 'push', k = E.out(prog(lt, 0, Math.max(ln.dur, 3))), pk = 1 + 0.04 * (1 - E.out(prog(lt, 0, 0.25)));
         let s = 1, dx = 0; if (cam === 'push') s = 1 + 0.06 * k; else if (cam === 'pull') s = 1.1 - 0.08 * k; else if (cam === 'panL') { s = 1.08; dx = lerp(40, -40, k); } else if (cam === 'panR') { s = 1.08; dx = lerp(-40, 40, k); }
         else if (String(cam).startsWith('zoom')) { const [, zx, zy, zs] = cam.split(':'); const z = 1 + (+zs || 0.5) * E.inOut(prog(lt, 0, 0.6)); ctx.translate(+zx, +zy); ctx.scale(z, z); ctx.translate(-zx, -zy); return; }
         ctx.translate(540 + dx, 960); ctx.scale(s * pk, s * pk); ctx.translate(-540, -960); },
-      intro(t) { bg(th.introBg || (TL.lines[0].shot || {}).bg); const tt = th.intro || TL.title; ctx.font = '800 110px K'; const sz = Math.min(th.introSize || 110, 110 * 760 / ctx.measureText(tt).width); RH.bigText(tt, 510, 900, sz, th.introCol || '#fff', prog(t, 0, 0.3)); },
-      overlay(t, ln) { if (ln && (ln.cta || ln.noBar)) return; ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.38)'; ctx.beginPath(); ctx.roundRect(150, 200, 720, 96, 48); ctx.fill(); ctx.restore(); txt(th.bar || TL.title, 510, 250, 48, th.barCol || '#fff', {f: 'K', w: 800, maxW: 680}); },
+      intro(t) { const first = Object.keys(shotOf)[0]; if (use3d) { scenes[first](0, Object.assign({}, TL.lines[0], {act: {}, pop: [], banner: null, dur: 3})); return; } bg(th.introBg || (TL.lines[0].shot || {}).bg); },
+      // หัวเรื่องดึงดูด: โชว์เฉพาะ 3 วินาทีแรก แล้วหายไป (ไม่มีแถบชื่อค้างทั้งคลิป)
+      overlay(t, ln) { const hk = th.hook || {}, top = hk.top || th.intro || TL.title, big = hk.big || '', kin = prog(t, 0.1, 0.45), kout = prog(t, 3.0, 3.4); if (kin <= 0 || kout >= 1) return;
+        ctx.save(); ctx.globalAlpha = 1 - kout; const sh = t < 0.7 ? Math.sin(t * 30) * 6 : 0, y0 = big ? 430 : 560;
+        ctx.save(); ctx.translate(510 + sh, y0); ctx.rotate(-0.05); const sc = E.back(kin); ctx.scale(sc, sc); let sz = big ? 74 : 92; ctx.font = `800 ${sz}px K`; const tw = ctx.measureText(top).width; if (tw > 640) { sz *= 640 / tw; ctx.font = `800 ${sz}px K`; } const bw = Math.min(720, ctx.measureText(top).width + 90), bh = sz * 1.9;
+        ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.beginPath(); ctx.roundRect(-bw / 2 + 8, -bh / 2 + 12, bw, bh, 28); ctx.fill(); ctx.fillStyle = hk.col || '#e63946'; ctx.beginPath(); ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 28); ctx.fill(); ctx.lineWidth = 10; ctx.strokeStyle = '#141414'; ctx.stroke();
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#fff'; ctx.fillText(top, 0, 6); ctx.restore();
+        if (big) { const kb = prog(t, 0.45, 0.85); if (kb > 0) { ctx.save(); ctx.translate(510, y0 + 175); ctx.rotate(0.03); let s2 = 130; ctx.font = `800 ${s2}px K`; s2 = Math.min(s2, s2 * 740 / ctx.measureText(big).width); RH.bigText(big, 0, 0, s2, hk.bigCol || '#7fe0ff', kb); ctx.restore(); } }
+        ctx.restore(); },
       outroGap: 0.5, outro(k) { ctx.fillStyle = endBg[1]; ctx.globalAlpha = E.inOut(k); ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; },
-      endCard(k) { RH.bg.studio(endBg[0], endBg[1]); ctx.save(); ctx.globalAlpha = k; productArt(510, 760, th.endScale || 1); RH.bigText(th.endTitle || TL.product, 510, 1010, th.endSize || 84, '#fff'); RH.bigText('อยู่ในตะกร้าด้านล่าง', 510, 1130, 68, th.endCol || '#e63946'); RH.basket(510, 1330, 0.6); ctx.restore(); },
+      endCard(k) { if (use3d) { end3 = end3 || S3.endShot(endBg[0], endBg[1]); ctx.drawImage(S3.renderEnd(end3), 0, 0); } else RH.bg.studio(endBg[0], endBg[1]); ctx.save(); ctx.globalAlpha = k; productArt(510, 760, th.endScale || 1); RH.bigText(th.endTitle || TL.product, 510, 1010, th.endSize || 84, '#fff'); RH.bigText('อยู่ในตะกร้าด้านล่าง', 510, 1130, 68, th.endCol || '#e63946'); RH.basket(510, 1330, 0.6); ctx.restore(); },
     };
   }
   return {make, PROPS, BG, FX, note, mark, stamp, calendar, sheep, bowl, rain, glow, heartPath, rect, dot};

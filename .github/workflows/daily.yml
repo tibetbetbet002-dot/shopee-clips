@@ -1,4 +1,4 @@
-# ทำคลิปรายวันบน GitHub Actions (ฟรี ไม่ใช้ AI) — 06:00 เวลาไทย = 23:00 UTC
+# ทำคลิปรายวันบน GitHub Actions (ฟรี) — ภาพ 3 มิติใช้เวลานาน จึงตั้งเวลารอไว้ 5.5 ชม. — 06:00 เวลาไทย = 23:00 UTC
 name: daily-clips
 on:
   schedule:
@@ -9,7 +9,7 @@ permissions:
 jobs:
   make:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,6 +24,7 @@ jobs:
         env:
           DRIVE_UPLOAD_URL: ${{ secrets.DRIVE_UPLOAD_URL }}
           DRIVE_UPLOAD_KEY: ${{ secrets.DRIVE_UPLOAD_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CHROME_PATH: /usr/bin/google-chrome
           PYTHONIOENCODING: utf-8
         run: python tools/daily_run.py

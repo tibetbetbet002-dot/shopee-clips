@@ -3,7 +3,7 @@
  "series": "ยายมะลิสอนวางแผน",
  "product": "สมุดแพลนเนอร์",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "ลิสต์ร้อยข้อของจูน", "intro": "ทำงานทั้งวัน เสร็จ 0 ข้อ", "hl": "#ffd23f", "endBg": ["#c9f2ec", "#7fd8c9"], "productProp": "planner", "productOpt": {"cover": true}, "endScale": 0.75},
+ "theme": {"hook": {"top": "ลิสต์ร้อยข้อ!", "big": "เสร็จ 0 ข้อ"}, "bar": "ลิสต์ร้อยข้อของจูน", "intro": "ทำงานทั้งวัน เสร็จ 0 ข้อ", "hl": "#ffd23f", "endBg": ["#c9f2ec", "#7fd8c9"], "productProp": "planner", "productOpt": {"cover": true}, "endScale": 0.75},
  "looks": {
   "june": {"outfit": "#ffb703", "hair": "neat", "hairCol": "#3b2418", "collar": true, "belt": false},
   "yai": {"outfit": "#b5838d", "hair": "curly", "hairCol": "#d9d9d9", "glasses": true, "pattern": "check", "belt": false, "blush": true},

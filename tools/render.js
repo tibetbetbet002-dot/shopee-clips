@@ -1,7 +1,13 @@
 // เรนเดอร์คลิปจาก timeline.json -> MP4 แนวตั้ง 1080x1920
 // ใช้: node render.js <โฟลเดอร์คลิป> [--stills 1,5,9]
 const fs = require('fs'), path = require('path'), { spawn, execSync } = require('child_process');
-const { pathToFileURL } = require('url');
+const http = require('http');
+// เสิร์ฟไฟล์ผ่าน http ในเครื่อง (โมดูล 3 มิติโหลดจาก file:// ไม่ได้)
+const ROOT = path.resolve(__dirname, '..');
+const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.ttf': 'font/ttf', '.json': 'application/json', '.png': 'image/png', '.jpg': 'image/jpeg' };
+function serve() { const srv = http.createServer((q, r) => { const f = path.join(ROOT, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(ROOT) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); }
+  r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); }); return new Promise(res => srv.listen(0, '127.0.0.1', () => res(srv))); }
+const urlOf = (port, f) => `http://127.0.0.1:${port}/` + path.relative(ROOT, f).split(path.sep).map(encodeURIComponent).join('/');
 const puppeteer = require('puppeteer-core');
 
 const FPS = 30;
@@ -29,14 +35,15 @@ const FF = execSync(`${PY} -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ff
   const tl = JSON.parse(fs.readFileSync(path.join(dir, 'timeline.json'), 'utf8'));
   const browser = await puppeteer.launch({
     executablePath: findBrowser(), headless: true,
-    args: ['--allow-file-access-from-files', '--disable-web-security', '--no-sandbox', '--disable-dev-shm-usage'],
+    args: ['--no-sandbox', '--disable-dev-shm-usage', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'],
   });
+  const srv = await serve(), port = srv.address().port;
   const page = await browser.newPage();
   page.on('pageerror', e => console.error('PAGE ERROR', e.message));
   page.on('console', m => { if (m.type() === 'error') console.error('CONSOLE', m.text()); });
   await page.setViewport({ width: 1080, height: 1920 });
-  await page.goto(pathToFileURL(path.join(__dirname, 'core.html')).href);
-  const epUrl = pathToFileURL(path.join(dir, 'scenes.js')).href + '?v=' + Date.now();
+  await page.goto(urlOf(port, path.join(__dirname, 'core.html')));
+  const epUrl = urlOf(port, path.join(dir, 'scenes.js')) + '?v=' + Date.now();
   await page.evaluate((t, u) => window.init(t, u), tl, epUrl);
   const frame = (t, q) => page.evaluate((t, q) => { window.draw(t); return document.getElementById('cv').toDataURL('image/jpeg', q); }, t, q)
     .then(u => Buffer.from(u.split(',')[1], 'base64'));
@@ -46,14 +53,15 @@ const FF = execSync(`${PY} -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ff
     for (const t of process.argv[si + 1].split(',').map(Number)) {
       fs.writeFileSync(path.join(sd, `t${t.toFixed(2)}.jpg`), await frame(t, 0.85));
     }
-    await browser.close(); console.log('stills ->', sd); return;
+    await browser.close(); srv.close(); console.log('stills ->', sd); return;
   }
 
   const out = path.join(dir, path.basename(dir) + '.mp4');
   const ff = spawn(FF, ['-loglevel', 'error', '-y', '-f', 'image2pipe', '-c:v', 'mjpeg', '-framerate', String(FPS), '-i', '-',
     '-i', path.join(dir, 'audio.wav'), '-c:v', 'libx264', '-preset', 'slow', '-tune', 'animation', '-crf', '15', '-maxrate', '2200k', '-bufsize', '4400k', '-profile:v', 'high', '-pix_fmt', 'yuv420p', '-b:a', '192k',
     '-af', 'loudnorm=I=-14:TP=-1.5:LRA=11', '-ar', '48000', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', out], { stdio: ['pipe', 'inherit', 'inherit'] });
-  const n = Math.ceil(tl.total * FPS);
+  const fi = process.argv.indexOf('--frames');  // ทดสอบเร็ว: เรนเดอร์แค่ N เฟรมแรก
+  const n = fi > 0 ? +process.argv[fi + 1] : Math.ceil(tl.total * FPS);
   for (let i = 0; i < n; i++) {
     const buf = await frame(i / FPS, 0.98);
     if (!ff.stdin.write(buf)) await new Promise(r => ff.stdin.once('drain', r));

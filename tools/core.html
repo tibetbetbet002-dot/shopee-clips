@@ -19,7 +19,7 @@ html,body{margin:0;background:#000}canvas{display:block}
 <body><canvas id="cv" width="1080" height="1920"></canvas>
 <script>
 // ======== ระบบกลาง: ใช้ร่วมกันทุกตอน (ไม่มีภาพของตอนไหนอยู่ในนี้) ========
-const cv=document.getElementById('cv'), ctx=cv.getContext('2d');
+const cv=document.getElementById('cv');let ctx=cv.getContext('2d');
 const W=1080,H=1920;let OL='#24142e',LW=9;
 let TL=null,T=0,EP=null;
 const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
@@ -112,6 +112,8 @@ function wordCaption(ln,lt){const ch=wordChunks(ln);if(!ch.length)return false;l
 function defaultCamera(name,lt){const s=1+0.09*(1-E.out(prog(lt,0,0.28)));ctx.translate(540,960);ctx.scale(s,s);ctx.translate(-540,-960);}
 
 window.init=async(tl,epUrl)=>{TL=tl;
+  if(tl.style!=='2d'){try{window.THREE=await import('./node_modules/three/build/three.module.js');
+    for(const f of['lib/rh3d.js','lib/story3d.js'])await new Promise((res,rej)=>{const s=document.createElement('script');s.src=f;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}catch(e){console.error('3D load fail',e&&e.message);}}
   await new Promise((res)=>{const s=document.createElement('script');s.src='lib/roundhead.js';s.onload=res;s.onerror=res;document.head.appendChild(s);});
   await new Promise((res)=>{const s=document.createElement('script');s.src='lib/story.js';s.onload=res;s.onerror=res;document.head.appendChild(s);});
   await new Promise((res,rej)=>{const s=document.createElement('script');s.src=epUrl;s.onload=res;s.onerror=rej;document.head.appendChild(s);});

@@ -7,5 +7,21 @@
  "@female": "en-US-EmmaMultilingualNeural",
  "@female2": "en-US-AvaMultilingualNeural",
  "@female3": "fr-FR-VivienneMultilingualNeural",
- "th-TH-PremwadeeNeural": "en-US-EmmaMultilingualNeural"
+ "th-TH-PremwadeeNeural": "en-US-EmmaMultilingualNeural",
+ "gemini": {
+  "@narrator": "Charon",
+  "th-TH-NiwatNeural": "Charon",
+  "@male": "Puck",
+  "@male2": "Fenrir",
+  "@male3": "Orus",
+  "en-US-AndrewMultilingualNeural": "Fenrir",
+  "en-US-BrianMultilingualNeural": "Orus",
+  "@female": "Leda",
+  "@female2": "Aoede",
+  "@female3": "Zephyr",
+  "th-TH-PremwadeeNeural": "Kore",
+  "en-US-EmmaMultilingualNeural": "Leda",
+  "en-US-AvaMultilingualNeural": "Aoede",
+  "fr-FR-VivienneMultilingualNeural": "Zephyr"
+ }
 }

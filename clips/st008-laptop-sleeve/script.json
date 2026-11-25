@@ -3,7 +3,7 @@
  "series": "งานสามเดือนในกระเป๋าผ้า",
  "product": "ซองใส่โน้ตบุ๊กกันกระแทก",
  "intro": 0.6, "gap": 0.32, "outro": 2.2,
- "theme": {"bar": "ฝนถล่มบนวินมอเตอร์ไซค์", "intro": "ฝนถล่มกลางทาง", "hl": "#9fe3ff", "endBg": ["#d6e2ff", "#9fb4f0"], "productProp": "sleeve", "endScale": 0.9},
+ "theme": {"hook": {"top": "ฝนถล่มกลางทาง!", "big": "โน้ตบุ๊กจะรอดไหม"}, "bar": "ฝนถล่มบนวินมอเตอร์ไซค์", "intro": "ฝนถล่มกลางทาง", "hl": "#9fe3ff", "endBg": ["#d6e2ff", "#9fb4f0"], "productProp": "sleeve", "endScale": 0.9},
  "looks": {
   "oat": {"outfit": "#7bd389", "hair": "neat", "hairCol": "#222", "glasses": true, "collar": true, "tie": "#2b3a67"},
   "win": {"outfit": "#ff7a1a", "hair": "cap", "capCol": "#1d3557", "hairCol": "#333", "pattern": "stripe", "goatee": true},
