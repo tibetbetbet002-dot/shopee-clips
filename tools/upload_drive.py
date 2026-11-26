@@ -1,5 +1,5 @@
 """อัปโหลดไฟล์ทั้งโฟลเดอร์ขึ้น Google Drive ผ่าน Apps Script เว็บแอป
-ใช้: python upload_drive.py <โฟลเดอร์ในเครื่อง> <ชื่อโฟลเดอร์บนไดรฟ์ เช่น 21.11.2026>
+ใช้: python upload_drive.py <โฟลเดอร์หรือไฟล์ในเครื่อง> <ชื่อโฟลเดอร์บนไดรฟ์ เช่น 21.11.2026>
 ต้องมีตัวแปร DRIVE_UPLOAD_URL และ DRIVE_UPLOAD_KEY (หรือไฟล์ ตั้งค่า/ค่าที่ต้องใส่บนคลาวด์.txt ในเครื่อง)"""
 import base64, json, mimetypes, os, sys, time, urllib.request
 
@@ -42,7 +42,10 @@ def main():
     url, key = cfg()
     res = post(url, {"key": key, "folder": folder, "ping": True})
     print("โฟลเดอร์:", res["folderUrl"])
-    for f in sorted(os.listdir(src)):
+    files = [os.path.basename(src)] if os.path.isfile(src) else sorted(os.listdir(src))  # ไฟล์เดียวก็ได้
+    if os.path.isfile(src):
+        src = os.path.dirname(src) or "."
+    for f in files:
         p = os.path.join(src, f)
         if not os.path.isfile(p):
             continue

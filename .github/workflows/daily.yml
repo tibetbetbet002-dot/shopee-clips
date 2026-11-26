@@ -1,4 +1,4 @@
-# ทำคลิปรายวันบน GitHub Actions (ฟรี) — ภาพ 3 มิติใช้เวลานาน จึงตั้งเวลารอไว้ 5.5 ชม. — 06:00 เวลาไทย = 23:00 UTC
+# ทำคลิปรายวันบน GitHub Actions (ฟรี) — แยกเครื่องละ 1 คลิป ทำพร้อมกัน แต่ละคลิปเสร็จแล้วอัปไดรฟ์ทันที — 06:00 เวลาไทย = 23:00 UTC
 name: daily-clips
 on:
   schedule:
@@ -16,9 +16,36 @@ on:
 permissions:
   contents: write
 jobs:
-  make:
+  # ขั้น 1: เลือกตอนที่จะทำวันนี้
+  plan:
     runs-on: ubuntu-latest
-    timeout-minutes: 330
+    outputs:
+      eps: ${{ steps.p.outputs.eps }}
+      day: ${{ steps.p.outputs.day }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: p
+        env:
+          ONLY: ${{ github.event.inputs.only }}
+          DAY: ${{ github.event.inputs.date }}
+          PYTHONIOENCODING: utf-8
+        run: |
+          D="${DAY:-$(TZ=Asia/Bangkok date +%d.%m.%Y)}"
+          echo "day=$D" >> "$GITHUB_OUTPUT"
+          E=$(python tools/daily_run.py --plan --date "$D" ${ONLY:+--only "$ONLY"})
+          echo "แผน: $E"
+          echo "eps=$E" >> "$GITHUB_OUTPUT"
+
+  # ขั้น 2: เครื่องละ 1 คลิป ทำพร้อมกัน (ตอนหลัก ถ้าพังใช้ตอนสำรอง)
+  clip:
+    needs: plan
+    if: needs.plan.outputs.eps != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix:
+        eps: ${{ fromJSON(needs.plan.outputs.eps) }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -37,14 +64,45 @@ jobs:
           GOOGLE_TTS_KEY: ${{ secrets.GOOGLE_TTS_KEY }}
           CHROME_PATH: /usr/bin/google-chrome
           PYTHONIOENCODING: utf-8
-          ONLY: ${{ github.event.inputs.only }}
-          DAY: ${{ github.event.inputs.date }}
-        run: python tools/daily_run.py ${ONLY:+--only "$ONLY"} ${DAY:+--date "$DAY"}
-      - name: บันทึกว่าลงตอนไหนไปแล้ว
+        run: python tools/daily_run.py --one "${{ matrix.eps }}" --date "${{ needs.plan.outputs.day }}"
+      - name: ส่งชื่อตอนที่สำเร็จ
         if: always()
         run: |
+          mkdir -p ok && [ -f done.txt ] && cp done.txt "ok/$(cat done.txt)" || true
+          echo "${{ strategy.job-index }}" > ok/.job-${{ strategy.job-index }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ok-${{ strategy.job-index }}
+          path: ok/
+          include-hidden-files: true
+
+  # ขั้น 3: บันทึกว่าลงตอนไหนไปแล้ว (เฉพาะรอบตามคิวปกติ)
+  record:
+    needs: [plan, clip]
+    if: always() && needs.plan.outputs.eps != '[]' && github.event.inputs.only == ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: ok-*
+          path: ok
+          merge-multiple: true
+      - name: บันทึก
+        env:
+          PYTHONIOENCODING: utf-8
+        run: |
+          EPS=$(ls ok 2>/dev/null | paste -sd, -)
+          echo "สำเร็จ: $EPS"
+          [ -n "$EPS" ] || exit 0
           git config user.name "daily-clips-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add tools/registry.json
-          git commit -m "บันทึกคลิปที่ลงแล้ว $(TZ=Asia/Bangkok date +%d.%m.%Y)" || true
-          git push || true
+          for i in 1 2 3; do
+            git pull --rebase -q || true
+            python tools/daily_run.py --record "$EPS" --date "${{ needs.plan.outputs.day }}"
+            git add tools/registry.json
+            git commit -qm "บันทึกคลิปที่ลงแล้ว ${{ needs.plan.outputs.day }}" || exit 0
+            git push && exit 0
+            git reset -q --hard HEAD~1
+          done
