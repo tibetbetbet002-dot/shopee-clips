@@ -53,7 +53,7 @@ const FF = execSync(`${PY} -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ff
     for (const t of process.argv[si + 1].split(',').map(Number)) {
       fs.writeFileSync(path.join(sd, `t${t.toFixed(2)}.jpg`), await frame(t, 0.85));
     }
-    await browser.close(); srv.close(); console.log('stills ->', sd); return;
+    await browser.close(); srv.close(); console.log('stills ->', sd); process.exit(0);
   }
 
   const out = path.join(dir, path.basename(dir) + '.mp4');
@@ -69,6 +69,7 @@ const FF = execSync(`${PY} -c "import imageio_ffmpeg;print(imageio_ffmpeg.get_ff
   }
   ff.stdin.end();
   await new Promise(r => ff.on('close', r));
-  await browser.close();
+  await Promise.race([browser.close(), new Promise(r => setTimeout(r, 15000))]); srv.close();
   console.log('\nเสร็จ ->', out);
+  process.exit(0);  // กันค้าง: เซิร์ฟเวอร์ในเครื่องที่เปิดไว้ทำให้โปรแกรมไม่ยอมปิดเอง
 })();

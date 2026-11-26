@@ -10,9 +10,9 @@ REG = os.path.join(T, "registry.json")
 TAGS = "#โต๊ะคอม #ของมันต้องมี #shopee #ป้ายยา #แต่งโต๊ะคอม #workfromhome #ของดีบอกต่อ"
 
 
-def run(cmd):
+def run(cmd, timeout=None):
     print("$", " ".join(cmd), flush=True)
-    subprocess.run(cmd, check=True, cwd=ROOT)
+    subprocess.run(cmd, check=True, cwd=ROOT, timeout=timeout)
 
 
 def main():
@@ -49,7 +49,7 @@ def main():
         d = os.path.join("clips", ep)
         try:
             run([PY, os.path.join(T, "voice.py"), d])
-            run(["node", os.path.join(T, "render.js"), d])
+            run(["node", os.path.join(T, "render.js"), d], timeout=100 * 60)  # เกิน 100 นาที = ถือว่าค้าง ข้ามไปตอนถัดไป
             shutil.copy(os.path.join(ROOT, d, ep + ".mp4"), out)
             sc = json.load(open(os.path.join(ROOT, d, "script.json"), encoding="utf-8"))
             caps.append(f"{ep}.mp4\n{sc['title']} 🤯 {sc['lines'][0]['text']}\n{sc['product']} กดตะกร้าด้านล่างเลย 🛒\n{TAGS}\n")
